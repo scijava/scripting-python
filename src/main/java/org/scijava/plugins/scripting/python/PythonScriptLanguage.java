@@ -29,19 +29,12 @@
 
 package org.scijava.plugins.scripting.python;
 
-import java.security.CodeSource;
-
-import javax.script.CompiledScript;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 import org.scijava.script.AdaptedScriptLanguage;
 import org.scijava.script.ScriptLanguage;
-import org.scijava.util.ClassUtils;
-import org.scijava.util.Types;
 
 /**
  * An adapter for conda-based python to the SciJava scripting interface.
@@ -52,6 +45,11 @@ import org.scijava.util.Types;
  */
 @Plugin(type = ScriptLanguage.class, name = "Python 3", priority = Priority.HIGH)
 public class PythonScriptLanguage extends AdaptedScriptLanguage {
+
+	public PythonScriptLanguage(String factoryName) {
+		super(factoryName);
+		// TODO Auto-generated constructor stub
+	}
 
 	@Override
 	public ScriptEngine getScriptEngine() {

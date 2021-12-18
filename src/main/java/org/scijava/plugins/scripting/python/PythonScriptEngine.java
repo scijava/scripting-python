@@ -29,8 +29,16 @@
 
 package org.scijava.plugins.scripting.python;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.script.ScriptException;
 import org.scijava.script.AbstractScriptEngine;
+import org.scijava.Context;
+import org.scijava.object.ObjectService;
+import org.scijava.plugin.Parameter;
 import org.scijava.plugins.scripting.python.PythonScriptRunner;
 
 /**
@@ -51,26 +59,26 @@ public class PythonScriptEngine extends AbstractScriptEngine {
 
 	@Override
 	public Object eval(String script) throws ScriptException {
-		Map<String, Object> vars;
+		Map<String, Object> vars = new HashMap<String, Object>();
 		//parse script parameters and build input map Map<String, Object> vars
 
 		return objectService.getObjects(PythonScriptRunner.class).stream().findAny().get().run(script, vars);
 	}
 
 	@Override
-		public Object eval(Reader reader) throws ScriptException {
-			StringBuilder buf = new StringBuilder();
-			char [] cbuf = new char [65536];
-			while (true) {
-				try {
-					int nChars = reader.read(cbuf);
-					if (nChars <= 0) break;
-					buf.append(cbuf, 0, nChars);
-				} catch (IOException e) {
-					throw new ScriptException(e);
-				}
+	public Object eval(Reader reader) throws ScriptException {
+		StringBuilder buf = new StringBuilder();
+		char [] cbuf = new char [65536];
+		while (true) {
+			try {
+				int nChars = reader.read(cbuf);
+				if (nChars <= 0) break;
+				buf.append(cbuf, 0, nChars);
+			} catch (IOException e) {
+				throw new ScriptException(e);
 			}
-			return eval(buf.toString());
+		}
+		return eval(buf.toString());
 	}
 
 }

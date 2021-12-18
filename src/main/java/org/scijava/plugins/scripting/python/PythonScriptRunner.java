@@ -29,6 +29,8 @@
 
 package org.scijava.plugins.scripting.python;
 
+import java.util.Map;
+
 /**
  * Interface for conda-based python script running implementations.
  *
