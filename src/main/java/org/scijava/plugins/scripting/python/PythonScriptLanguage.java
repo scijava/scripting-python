@@ -33,7 +33,7 @@ import javax.script.ScriptEngine;
 
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
-import org.scijava.script.AdaptedScriptLanguage;
+import org.scijava.script.AbstractScriptLanguage;
 import org.scijava.script.ScriptLanguage;
 
 /**
@@ -44,13 +44,8 @@ import org.scijava.script.ScriptLanguage;
  * @see ScriptEngine
  */
 @Plugin(type = ScriptLanguage.class, name = "Python 3", priority = Priority.HIGH)
-public class PythonScriptLanguage extends AdaptedScriptLanguage {
-
-	public PythonScriptLanguage(String factoryName) {
-		super(factoryName);
-		// TODO Auto-generated constructor stub
-	}
-
+public class PythonScriptLanguage extends AbstractScriptLanguage {
+	
 	@Override
 	public ScriptEngine getScriptEngine() {
 		return new PythonScriptEngine(getContext());
