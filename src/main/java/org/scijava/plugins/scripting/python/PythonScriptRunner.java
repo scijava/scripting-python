@@ -31,6 +31,8 @@ package org.scijava.plugins.scripting.python;
 
 import java.util.Map;
 
+import javax.script.ScriptContext;
+
 /**
  * Interface for conda-based python script running implementations.
  *
@@ -39,5 +41,5 @@ import java.util.Map;
  * @see ScriptEngine
  */
 public interface PythonScriptRunner {
-	Object run(String script, Map<String, Object> vars);
+	Object run(String script, Map<String, Object> vars, ScriptContext scriptContext);
 }
