@@ -1,6 +1,6 @@
 /*
  * #%L
- * JSR-223-compliant Groovy scripting language plugin.
+ * Conda Python 3 scripting interface
  * %%
  * Copyright (C) 2014 - 2021 SciJava developers.
  * %%
