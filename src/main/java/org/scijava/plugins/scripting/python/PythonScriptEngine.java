@@ -68,7 +68,7 @@ public class PythonScriptEngine extends AbstractScriptEngine {
 
 	@Override
 	public Object eval(String script) throws ScriptException {
-		return objectService.getObjects(PythonScriptRunner.class).stream().findAny().get().run(script, engineScopeBindings, scriptContext);
+		return objectService.getObjects(PythonScriptRunner.class).get(0).run(script, engineScopeBindings, scriptContext);
 	}
 
 	@Override
