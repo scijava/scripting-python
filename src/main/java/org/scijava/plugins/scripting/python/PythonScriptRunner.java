@@ -32,6 +32,7 @@ package org.scijava.plugins.scripting.python;
 import java.util.Map;
 
 import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
 
 /**
  * Interface for conda-based python script running implementations.

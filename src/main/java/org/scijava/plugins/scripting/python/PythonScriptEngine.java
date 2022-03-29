@@ -38,6 +38,7 @@ import java.util.Set;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
+import javax.script.ScriptEngine;
 import org.scijava.script.AbstractScriptEngine;
 import org.scijava.Context;
 import org.scijava.log.LogService;
