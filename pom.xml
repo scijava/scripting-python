@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>scripting-python</artifactId>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.1.1-SNAPSHOT</version>
 
 	<name>SciJava Scripting: Python</name>
 	<description>Python scripting language plugin to be used with a conda environment.</description>
