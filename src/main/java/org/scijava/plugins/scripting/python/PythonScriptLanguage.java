@@ -29,11 +29,9 @@
 
 package org.scijava.plugins.scripting.python;
 
-import java.util.Arrays;
-import java.util.List;
-
 import javax.script.ScriptEngine;
 
+import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 import org.scijava.script.AbstractScriptLanguage;
 import org.scijava.script.ScriptLanguage;
@@ -45,17 +43,12 @@ import org.scijava.script.ScriptLanguage;
  * @author Karl Duderstadt
  * @see ScriptEngine
  */
-@Plugin(type = ScriptLanguage.class, name = "Conda Python 3")
+@Plugin(type = ScriptLanguage.class, name = "Conda Python 3", priority = Priority.VERY_LOW)
 public class PythonScriptLanguage extends AbstractScriptLanguage {
 	
 	@Override
 	public ScriptEngine getScriptEngine() {
 		return new PythonScriptEngine(getContext());
-	}
-	
-	@Override
-	public List<String> getExtensions() {
-		return Arrays.asList("py");
 	}
 	
 }
