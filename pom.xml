@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>scripting-python</artifactId>
-	<version>0.1.2-SNAPSHOT</version>
+	<version>0.1.2</version>
 
 	<name>SciJava Scripting: Python</name>
 	<description>Python scripting language plugin to be used with a conda environment.</description>
@@ -64,7 +64,7 @@
 	<scm>
 		<connection>scm:git:https://github.com/scijava/scripting-python</connection>
 		<developerConnection>scm:git:git@github.com:scijava/scripting-python</developerConnection>
-		<tag>HEAD</tag>
+		<tag>scripting-python-0.1.2</tag>
 		<url>https://github.com/scijava/scripting-python</url>
 	</scm>
 	<issueManagement>
