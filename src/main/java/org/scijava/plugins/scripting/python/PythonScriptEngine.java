@@ -37,14 +37,16 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.script.Bindings;
-import javax.script.ScriptException;
 import javax.script.ScriptEngine;
-import org.scijava.script.AbstractScriptEngine;
+import javax.script.ScriptException;
+
 import org.scijava.Context;
 import org.scijava.log.LogService;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugins.scripting.python.PythonScriptRunner;
+import org.scijava.script.AbstractScriptEngine;
+import org.scijava.ui.DialogPrompt;
+import org.scijava.ui.UIService;
 
 /**
  * A script engine for conda-based python.
@@ -60,6 +62,9 @@ public class PythonScriptEngine extends AbstractScriptEngine {
 	
 	@Parameter
 	LogService logService;
+	
+	@Parameter
+	UIService uiService;
 
 	public PythonScriptEngine(Context context) {
 		context.inject(this);
@@ -69,7 +74,13 @@ public class PythonScriptEngine extends AbstractScriptEngine {
 
 	@Override
 	public Object eval(String script) throws ScriptException {
-		return objectService.getObjects(PythonScriptRunner.class).get(0).run(script, engineScopeBindings, scriptContext);
+		if (objectService.getObjects(PythonScriptRunner.class).stream().count() > 0)
+			return objectService.getObjects(PythonScriptRunner.class).get(0).run(script, engineScopeBindings, scriptContext);
+		
+		uiService.showDialog("The PythonScriptRunner could not be found in the ObjectService. To use the\n" +
+			                   "Conda Python 3 script engine Fiji must be launched from python inside a conda\n " +
+			                   "environment and a PythonScriptRunner must be added to the ObjectService.\n", DialogPrompt.MessageType.ERROR_MESSAGE);
+		return null;
 	}
 
 	@Override
