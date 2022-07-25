@@ -35,7 +35,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 
 /**
- * Interface for conda-based python script running implementations.
+ * Interface for Python (PyImageJ) script running implementations.
  *
  * @author Curtis Rueden
  * @author Karl Duderstadt

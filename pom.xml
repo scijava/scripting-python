@@ -13,7 +13,7 @@
 	<version>0.1.3-SNAPSHOT</version>
 
 	<name>SciJava Scripting: Python</name>
-	<description>Python scripting language plugin to be used with a conda environment.</description>
+	<description>Python scripting language plugin to be used with PyImageJ.</description>
 	<url>https://github.com/scijava/scripting-python</url>
 	<inceptionYear>2021</inceptionYear>
 	<organization>

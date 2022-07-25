@@ -34,7 +34,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.ui.swing.script.SyntaxHighlighter;
 
 /**
- * SyntaxHighlighter for Conda Python 3.
+ * SyntaxHighlighter for Python (PyImageJ).
  *
  * @author Karl Duderstadt
  */

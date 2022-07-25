@@ -37,7 +37,7 @@ import org.scijava.script.AbstractScriptLanguage;
 import org.scijava.script.ScriptLanguage;
 
 /**
- * An adapter for conda-based python to the SciJava scripting interface.
+ * An adapter for Python (PyImageJ) to the SciJava scripting interface.
  *
  * @author Curtis Rueden
  * @author Karl Duderstadt

@@ -49,7 +49,7 @@ import org.scijava.ui.DialogPrompt;
 import org.scijava.ui.UIService;
 
 /**
- * A script engine for conda-based python.
+ * A script engine for Python (PyImageJ).
  *
  * @author Curtis Rueden
  * @author Karl Duderstadt
