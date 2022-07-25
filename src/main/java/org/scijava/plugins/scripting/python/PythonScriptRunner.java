@@ -1,6 +1,6 @@
 /*
  * #%L
- * Python scripting language plugin to be used with a conda environment.
+ * Python scripting language plugin to be used with PyImageJ.
  * %%
  * Copyright (C) 2021 - 2022 SciJava developers.
  * %%
