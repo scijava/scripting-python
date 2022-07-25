@@ -43,7 +43,7 @@ import org.scijava.script.ScriptLanguage;
  * @author Karl Duderstadt
  * @see ScriptEngine
  */
-@Plugin(type = ScriptLanguage.class, name = "Conda Python 3", priority = Priority.VERY_LOW)
+@Plugin(type = ScriptLanguage.class, name = "Python (PyImageJ)", priority = Priority.VERY_LOW)
 public class PythonScriptLanguage extends AbstractScriptLanguage {
 	
 	@Override

@@ -38,7 +38,7 @@ import org.scijava.ui.swing.script.SyntaxHighlighter;
  *
  * @author Karl Duderstadt
  */
-@Plugin(type = SyntaxHighlighter.class, name = "conda-python-3")
+@Plugin(type = SyntaxHighlighter.class, name = "python-(pyimagej)")
 public class PythonScriptSyntaxHighlighter extends PythonTokenMaker implements
 SyntaxHighlighter
 {
