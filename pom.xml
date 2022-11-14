@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>32.0.0-beta-4</version>
+		<version>33.2.0</version>
 		<relativePath />
 	</parent>
 
 	<artifactId>scripting-python</artifactId>
-	<version>0.2.1-SNAPSHOT</version>
+	<version>0.3.0-SNAPSHOT</version>
 
 	<name>SciJava Scripting: Python</name>
 	<description>Python scripting language plugin to be used with PyImageJ.</description>
@@ -47,6 +47,7 @@
 		<contributor>
 			<name>Karl Duderstadt</name>
 			<url>https://imagej.net/people/karlduderstadt</url>
+			<roles><role>founder</role></roles>
 			<properties><id>karlduderstadt</id></properties>
 		</contributor>
 	</contributors>
@@ -118,6 +119,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 	<repositories>
 		<repository>
 			<id>scijava.public</id>
