@@ -34,9 +34,12 @@ import java.io.Reader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.script.Bindings;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
@@ -45,11 +48,10 @@ import org.scijava.log.LogService;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.script.AbstractScriptEngine;
-import org.scijava.ui.DialogPrompt;
-import org.scijava.ui.UIService;
 
 /**
- * A script engine for Python (PyImageJ).
+ * A script engine for Python (CPython, not Jython!), backed by the
+ * <a href="https://github.com/scijava/scyjava">scyjava</a> library.
  *
  * @author Curtis Rueden
  * @author Karl Duderstadt
@@ -58,29 +60,30 @@ import org.scijava.ui.UIService;
 public class PythonScriptEngine extends AbstractScriptEngine {
 
 	@Parameter
-	ObjectService objectService;
+	private ObjectService objectService;
 	
 	@Parameter
-	LogService logService;
+	private LogService logService;
 	
-	@Parameter
-	UIService uiService;
-
-	public PythonScriptEngine(Context context) {
+	public PythonScriptEngine(final Context context) {
 		context.inject(this);
 		setLogService(logService);
 		engineScopeBindings = new ScriptBindings();
 	}
 
 	@Override
-	public Object eval(String script) throws ScriptException {
-		if (objectService.getObjects(PythonScriptRunner.class).stream().count() > 0)
-			return objectService.getObjects(PythonScriptRunner.class).get(0).run(script, engineScopeBindings, scriptContext);
-		
-		uiService.showDialog("The PythonScriptRunner could not be found in the ObjectService. To use the\n" +
-			                   "Conda Python 3 script engine Fiji must be launched from python inside a conda\n " +
-			                   "environment and a PythonScriptRunner must be added to the ObjectService.\n", DialogPrompt.MessageType.ERROR_MESSAGE);
-		return null;
+	public Object eval(final String script) throws ScriptException {
+		final Optional<Function> pythonScriptRunner = //
+			objectService.getObjects(Function.class).stream()//
+				.filter(obj -> "PythonScriptRunner".equals(objectService.getName(obj)))//
+				.findFirst();
+		if (!pythonScriptRunner.isPresent()) {
+			throw new IllegalStateException(//
+				"The PythonScriptRunner could not be found in the ObjectService. To use the\n" +
+					"Python script engine, you must call scyjava.enable_scijava_scripting(context)\n" +
+					"with this script engine's associated SciJava context before using it.");
+		}
+		return pythonScriptRunner.get().apply(new Args(script, engineScopeBindings, scriptContext));
 	}
 
 	@Override
@@ -105,10 +108,10 @@ public class PythonScriptEngine extends AbstractScriptEngine {
 	}
 	
 	//Somehow just type casting did not work...
-	class ScriptBindings implements Bindings {
-		
-		private Map<String, Object> bindingsMap; 
-		
+	private static class ScriptBindings implements Bindings {
+
+		private Map<String, Object> bindingsMap;
+
 		ScriptBindings() {
 			bindingsMap = new HashMap<String, Object>();
 		}
@@ -171,6 +174,18 @@ public class PythonScriptEngine extends AbstractScriptEngine {
 		@Override
 		public Object remove(Object key) {
 			return bindingsMap.remove(key);
+		}
+	}
+
+	private static class Args {
+		public final String script;
+		public final Map<String, Object> vars;
+		public final ScriptContext scriptContext;
+
+		public Args(final String script, final Map<String, Object> vars, final ScriptContext scriptContext) {
+			this.script = script;
+			this.vars = vars;
+			this.scriptContext = scriptContext;
 		}
 	}
 }
