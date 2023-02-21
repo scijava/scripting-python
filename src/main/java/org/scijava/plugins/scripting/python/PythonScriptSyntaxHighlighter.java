@@ -2,7 +2,7 @@
  * #%L
  * Python scripting language plugin to be used with PyImageJ.
  * %%
- * Copyright (C) 2021 - 2022 SciJava developers.
+ * Copyright (C) 2021 - 2023 SciJava developers.
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
