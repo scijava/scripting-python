@@ -1,6 +1,6 @@
 /*-
  * #%L
- * Python scripting language plugin to be used with PyImageJ.
+ * Python scripting language plugin to be used via scyjava.
  * %%
  * Copyright (C) 2021 - 2023 SciJava developers.
  * %%

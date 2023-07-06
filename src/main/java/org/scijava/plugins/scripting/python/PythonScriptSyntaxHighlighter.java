@@ -1,6 +1,6 @@
 /*
  * #%L
- * Python scripting language plugin to be used with PyImageJ.
+ * Python scripting language plugin to be used via scyjava.
  * %%
  * Copyright (C) 2021 - 2023 SciJava developers.
  * %%
@@ -34,11 +34,11 @@ import org.scijava.plugin.Plugin;
 import org.scijava.ui.swing.script.SyntaxHighlighter;
 
 /**
- * SyntaxHighlighter for Python (PyImageJ).
+ * SyntaxHighlighter for Python (scyjava).
  *
  * @author Karl Duderstadt
  */
-@Plugin(type = SyntaxHighlighter.class, name = "python-(pyimagej)")
+@Plugin(type = SyntaxHighlighter.class, name = "python-(scyjava)")
 public class PythonScriptSyntaxHighlighter extends PythonTokenMaker implements
 SyntaxHighlighter
 {

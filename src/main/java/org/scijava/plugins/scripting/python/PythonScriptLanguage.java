@@ -1,6 +1,6 @@
 /*
  * #%L
- * Python scripting language plugin to be used with PyImageJ.
+ * Python scripting language plugin to be used via scyjava.
  * %%
  * Copyright (C) 2021 - 2023 SciJava developers.
  * %%
@@ -37,13 +37,13 @@ import org.scijava.script.AbstractScriptLanguage;
 import org.scijava.script.ScriptLanguage;
 
 /**
- * An adapter for Python (PyImageJ) to the SciJava scripting interface.
+ * An adapter for Python (scyjava) to the SciJava scripting interface.
  *
  * @author Curtis Rueden
  * @author Karl Duderstadt
  * @see ScriptEngine
  */
-@Plugin(type = ScriptLanguage.class, name = "Python (PyImageJ)", priority = Priority.VERY_LOW)
+@Plugin(type = ScriptLanguage.class, name = "Python (scyjava)", priority = Priority.VERY_LOW)
 public class PythonScriptLanguage extends AbstractScriptLanguage {
 	
 	@Override
