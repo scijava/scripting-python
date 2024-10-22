@@ -29,6 +29,8 @@
 
 package org.scijava.plugins.scripting.python;
 
+import java.util.Arrays;
+import java.util.List;
 import javax.script.ScriptEngine;
 
 import org.scijava.Priority;
@@ -45,7 +47,17 @@ import org.scijava.script.ScriptLanguage;
  */
 @Plugin(type = ScriptLanguage.class, name = "Python (scyjava)", priority = Priority.VERY_LOW)
 public class PythonScriptLanguage extends AbstractScriptLanguage {
-	
+
+	@Override
+	public String getEngineName() {
+		return "python";
+	}
+
+	@Override
+	public List<String> getExtensions() {
+		return Arrays.asList("py");
+	}
+
 	@Override
 	public ScriptEngine getScriptEngine() {
 		return new PythonScriptEngine(getContext());
