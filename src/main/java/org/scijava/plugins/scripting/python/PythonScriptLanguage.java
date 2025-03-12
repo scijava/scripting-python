@@ -2,7 +2,7 @@
  * #%L
  * Python scripting language plugin to be used via scyjava.
  * %%
- * Copyright (C) 2021 - 2023 SciJava developers.
+ * Copyright (C) 2021 - 2025 SciJava developers.
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
