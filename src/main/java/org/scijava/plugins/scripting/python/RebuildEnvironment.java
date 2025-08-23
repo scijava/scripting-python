@@ -6,13 +6,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,6 +29,13 @@
 
 package org.scijava.plugins.scripting.python;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.stream.Stream;
+
 import org.apposed.appose.Appose;
 import org.apposed.appose.Builder;
 import org.scijava.app.AppService;
@@ -38,16 +45,9 @@ import org.scijava.log.Logger;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.stream.Stream;
-
 /**
  * SciJava command wrapper to build a Python environment.
- * 
+ *
  * @author Curtis Rueden
  */
 @Plugin(type = Command.class, label = "Rebuild Python environment")
@@ -90,12 +90,12 @@ public class RebuildEnvironment implements Command {
 		if (targetDir.exists()) targetDir.renameTo(backupDir);
 		// Build the new environment.
 		try {
-			Builder builder = Appose
-				.file(environmentYaml, "environment.yml")
-				.subscribeOutput(this::report)
-				.subscribeError(this::report)
-				.subscribeProgress((msg, cur, max) -> Splash.update(msg, (double) cur / max));
-			System.err.println("Building Python environment"); // HACK: stderr stream triggers console window show.
+			Builder builder = Appose.file(environmentYaml, "environment.yml")
+				.subscribeOutput(this::report).subscribeError(this::report)
+				.subscribeProgress((msg, cur, max) -> Splash.update(msg, (double) cur /
+					max));
+			System.err.println("Building Python environment");
+			// HACK: stderr stream triggers console window show.
 			Splash.show();
 			builder.build(targetDir);
 		}

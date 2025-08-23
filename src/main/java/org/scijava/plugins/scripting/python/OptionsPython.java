@@ -6,13 +6,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,6 +29,13 @@
 
 package org.scijava.plugins.scripting.python;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.scijava.app.AppService;
 import org.scijava.command.CommandService;
 import org.scijava.launcher.Config;
@@ -40,25 +47,15 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.widget.Button;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /**
  * Options for configuring the Python environment.
- * 
+ *
  * @author Curtis Rueden
  */
-@Plugin(type = OptionsPlugin.class, menu = {
-	@Menu(label = MenuConstants.EDIT_LABEL,
-		weight = MenuConstants.EDIT_WEIGHT,
-		mnemonic = MenuConstants.EDIT_MNEMONIC),
-	@Menu(label = "Options", mnemonic = 'o'),
-	@Menu(label = "Python...", weight = 10),
-})
+@Plugin(type = OptionsPlugin.class, menu = { @Menu(
+	label = MenuConstants.EDIT_LABEL, weight = MenuConstants.EDIT_WEIGHT,
+	mnemonic = MenuConstants.EDIT_MNEMONIC), @Menu(label = "Options",
+		mnemonic = 'o'), @Menu(label = "Python...", weight = 10), })
 public class OptionsPython extends OptionsPlugin {
 
 	@Parameter
@@ -76,7 +73,8 @@ public class OptionsPython extends OptionsPlugin {
 	@Parameter(label = "Rebuild Python environment", callback = "rebuildEnv")
 	private Button rebuildEnvironment;
 
-	@Parameter(label = "Launch in Python mode", callback = "updatePythonConfig", persist = false)
+	@Parameter(label = "Launch in Python mode", callback = "updatePythonConfig",
+		persist = false)
 	private boolean pythonMode;
 
 	// -- OptionsPython methods --
@@ -124,11 +122,14 @@ public class OptionsPython extends OptionsPlugin {
 		}
 
 		if (pythonDir == null) {
-			// For the default Python directory, try to match the platform string used for Java installations.
-			final String javaPlatform = System.getProperty("scijava.app.java-platform");
-			final String platform = javaPlatform != null ? javaPlatform :
-				System.getProperty("os.name") + "-" + System.getProperty("os.arch");
-			final Path pythonPath = appService.getApp().getBaseDirectory().toPath().resolve("python").resolve(platform);
+			// For the default Python directory, try to match the platform
+			// string used for Java installations.
+			final String javaPlatform = System.getProperty(
+				"scijava.app.java-platform");
+			final String platform = javaPlatform != null ? javaPlatform : System
+				.getProperty("os.name") + "-" + System.getProperty("os.arch");
+			final Path pythonPath = appService.getApp().getBaseDirectory().toPath()
+				.resolve("python").resolve(platform);
 			pythonDir = pythonPath.toFile();
 		}
 	}
@@ -136,16 +137,16 @@ public class OptionsPython extends OptionsPlugin {
 	public void rebuildEnv() {
 		// Use scijava.app.python-env-file system property if present.
 		final Path appPath = appService.getApp().getBaseDirectory().toPath();
-		File environmentYaml = appPath.resolve("config").resolve("environment.yml").toFile();
-		final String pythonEnvFileProp = System.getProperty("scijava.app.python-env-file");
+		File environmentYaml = appPath.resolve("config").resolve("environment.yml")
+			.toFile();
+		final String pythonEnvFileProp = System.getProperty(
+			"scijava.app.python-env-file");
 		if (pythonEnvFileProp != null) {
 			environmentYaml = OptionsPython.stringToFile(appPath, pythonEnvFileProp);
 		}
 
-		commandService.run(RebuildEnvironment.class, true,
-			"environmentYaml", environmentYaml,
-			"targetDir", pythonDir
-		);
+		commandService.run(RebuildEnvironment.class, true, "environmentYaml",
+			environmentYaml, "targetDir", pythonDir);
 	}
 
 	@Override
@@ -195,8 +196,8 @@ public class OptionsPython extends OptionsPlugin {
 	 */
 	static String fileToString(Path baseDir, File file) {
 		Path filePath = file.toPath();
-		Path relPath = filePath.startsWith(baseDir) ?
-			baseDir.relativize(filePath) : filePath.toAbsolutePath();
+		Path relPath = filePath.startsWith(baseDir) ? baseDir.relativize(filePath)
+			: filePath.toAbsolutePath();
 		return relPath.toString();
 	}
 }
