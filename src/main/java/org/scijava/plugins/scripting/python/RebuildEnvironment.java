@@ -111,11 +111,13 @@ public class RebuildEnvironment implements Command {
 		// Build the new environment.
 		try {
 			Builder builder = Appose.file(environmentYaml, "environment.yml")
-				.subscribeOutput(this::report).subscribeError(this::report)
+				.subscribeOutput(this::reportMsg).subscribeError(this::reportErr)
 				.subscribeProgress((msg, cur, max) -> Splash.update(msg, (double) cur /
 					max));
+
 			// HACK: stderr stream triggers console window show.
-			System.err.println("Building Python environment");
+			System.err.println();
+			log.info("Building Python environment");
 			Splash.show();
 			builder.build(targetDir);
 			// Notify user of success
@@ -130,8 +132,13 @@ public class RebuildEnvironment implements Command {
 		}
 	}
 
-	private void report(String s) {
+	private void reportErr(String s) {
 		if (s.isEmpty()) System.err.print(".");
-		else System.err.print(s);
+		else log.error(s);
+	}
+
+	private void reportMsg(String s) {
+		if (s.isEmpty()) System.err.print(".");
+		else log.info(s);
 	}
 }
