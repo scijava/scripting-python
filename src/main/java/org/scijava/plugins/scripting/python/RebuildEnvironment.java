@@ -44,6 +44,8 @@ import org.scijava.launcher.Splash;
 import org.scijava.log.Logger;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.DialogPrompt;
+import org.scijava.ui.UIService;
 
 /**
  * SciJava command wrapper to build a Python environment.
@@ -65,13 +67,31 @@ public class RebuildEnvironment implements Command {
 	@Parameter(label = "Target directory")
 	private File targetDir;
 
+	@Parameter(required = false)
+	private UIService uiService;
+
 	// -- OptionsPython methods --
 
 	@Override
 	public void run() {
 		final File backupDir = new File(targetDir.getPath() + ".old");
+		if (targetDir.exists()) {
+			boolean confirmed = true;
+			if (uiService != null) {
+				String msg =
+					"The environment directory already exists. If you continue, it will be renamed to '" +
+						backupDir.getName() +
+						"' (and any previous backup will be deleted). Continue?";
+				DialogPrompt.Result result = uiService.showDialog(msg,
+					"Confirm Environment Rebuild",
+					DialogPrompt.MessageType.QUESTION_MESSAGE,
+					DialogPrompt.OptionType.YES_NO_OPTION);
+				confirmed = result == DialogPrompt.Result.YES_OPTION;
+			}
+			if (!confirmed) return;
+		}
+		// Delete the previous backup environment recursively.
 		if (backupDir.exists()) {
-			// Delete the previous backup environment recursively.
 			try (Stream<Path> x = Files.walk(backupDir.toPath())) {
 				x.sorted(Comparator.reverseOrder()).forEach(p -> {
 					try {
