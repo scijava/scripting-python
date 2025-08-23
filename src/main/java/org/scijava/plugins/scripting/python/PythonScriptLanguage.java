@@ -31,6 +31,7 @@ package org.scijava.plugins.scripting.python;
 
 import java.util.Arrays;
 import java.util.List;
+
 import javax.script.ScriptEngine;
 
 import org.scijava.Priority;
@@ -39,13 +40,13 @@ import org.scijava.script.AbstractScriptLanguage;
 import org.scijava.script.ScriptLanguage;
 
 /**
- * An adapter for Python (scyjava) to the SciJava scripting interface.
+ * An adapter for Python (pyimagej) to the SciJava scripting interface.
  *
  * @author Curtis Rueden
  * @author Karl Duderstadt
  * @see ScriptEngine
  */
-@Plugin(type = ScriptLanguage.class, name = "Python (scyjava)", priority = Priority.VERY_LOW)
+@Plugin(type = ScriptLanguage.class, name = "Python (pyimagej)", priority = Priority.VERY_LOW)
 public class PythonScriptLanguage extends AbstractScriptLanguage {
 
 	@Override
