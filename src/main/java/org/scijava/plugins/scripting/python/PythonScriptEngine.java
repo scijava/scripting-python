@@ -44,6 +44,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import org.scijava.Context;
+import org.scijava.command.CommandService;
 import org.scijava.log.LogService;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
@@ -65,6 +66,9 @@ public class PythonScriptEngine extends AbstractScriptEngine {
 	@Parameter
 	private LogService logService;
 
+	@Parameter
+	private CommandService commandService;
+
 	public PythonScriptEngine(final Context context) {
 		context.inject(this);
 		setLogService(logService);
@@ -78,10 +82,13 @@ public class PythonScriptEngine extends AbstractScriptEngine {
 				.filter(obj -> "PythonScriptRunner".equals(objectService.getName(obj)))//
 				.findFirst();
 		if (!pythonScriptRunner.isPresent()) {
+			// Try to help user by running OptionsPython plugin
+			if (commandService != null) {
+				commandService.run(OptionsPython.class, true);
+			}
 			throw new IllegalStateException(//
-				"The PythonScriptRunner could not be found in the ObjectService. To use the\n" +
-					"Python script engine, you must call scyjava.enable_scijava_scripting(context)\n" +
-					"with this script engine's associated SciJava context before using it.");
+				"The PythonScriptRunner could not be found.\n" +
+					"To use the Python script engine, you must launch your application in Python mode.");
 		}
 		return pythonScriptRunner.get().apply(new Args(script, engineScopeBindings,
 			scriptContext));
