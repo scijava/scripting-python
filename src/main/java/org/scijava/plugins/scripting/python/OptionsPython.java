@@ -145,18 +145,25 @@ public class OptionsPython extends OptionsPlugin {
 	}
 
 	public void rebuildEnv() {
-		// Use scijava.app.python-env-file system property if present.
+		File environmentYaml = getEnvironmentYamlFile();
+		commandService.run(RebuildEnvironment.class, true, "environmentYaml",
+			environmentYaml, "targetDir", pythonDir);
+	}
+
+	/**
+	 * Returns the File for the environment.yml, using the system property if set.
+	 */
+	private File getEnvironmentYamlFile() {
 		final Path appPath = appService.getApp().getBaseDirectory().toPath();
 		File environmentYaml = appPath.resolve("config").resolve("environment.yml")
 			.toFile();
 		final String pythonEnvFileProp = System.getProperty(
 			"scijava.app.python-env-file");
 		if (pythonEnvFileProp != null) {
-			environmentYaml = OptionsPython.stringToFile(appPath, pythonEnvFileProp);
+			environmentYaml = stringToFile(appPath, pythonEnvFileProp);
 		}
+		return environmentYaml;
 
-		commandService.run(RebuildEnvironment.class, true, "environmentYaml",
-			environmentYaml, "targetDir", pythonDir);
 	}
 
 	@Override
