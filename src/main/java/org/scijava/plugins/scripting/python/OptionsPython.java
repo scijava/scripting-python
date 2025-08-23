@@ -70,7 +70,7 @@ public class OptionsPython extends OptionsPlugin {
 	@Parameter(label = "Python environment directory", persist = false)
 	private File pythonDir;
 
-	@Parameter(label = "Rebuild Python environment", callback = "rebuildEnv")
+	@Parameter(label = "Build Python environment", callback = "rebuildEnv")
 	private Button rebuildEnvironment;
 
 	@Parameter(label = "Launch in Python mode", callback = "updatePythonConfig",
