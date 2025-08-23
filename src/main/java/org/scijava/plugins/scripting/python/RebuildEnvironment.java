@@ -114,10 +114,16 @@ public class RebuildEnvironment implements Command {
 				.subscribeOutput(this::report).subscribeError(this::report)
 				.subscribeProgress((msg, cur, max) -> Splash.update(msg, (double) cur /
 					max));
-			System.err.println("Building Python environment");
 			// HACK: stderr stream triggers console window show.
+			System.err.println("Building Python environment");
 			Splash.show();
 			builder.build(targetDir);
+			// Notify user of success
+			if (uiService != null) {
+				uiService.showDialog(
+					"Python environment setup was successful and is ready to use!",
+					"Environment Ready", DialogPrompt.MessageType.INFORMATION_MESSAGE);
+			}
 		}
 		catch (IOException exc) {
 			log.error("Failed to build Python environment", exc);
