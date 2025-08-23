@@ -45,6 +45,8 @@ import org.scijava.options.OptionsPlugin;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.DialogPrompt;
+import org.scijava.ui.UIService;
 import org.scijava.widget.Button;
 
 /**
@@ -76,6 +78,11 @@ public class OptionsPython extends OptionsPlugin {
 	@Parameter(label = "Launch in Python mode", callback = "updatePythonConfig",
 		persist = false)
 	private boolean pythonMode;
+
+	@Parameter(required = false)
+	private UIService uiService;
+
+	private boolean initialPythonMode = false;
 
 	// -- OptionsPython methods --
 
@@ -132,6 +139,9 @@ public class OptionsPython extends OptionsPlugin {
 				.resolve("python").resolve(platform);
 			pythonDir = pythonPath.toFile();
 		}
+
+		// Store the initial value of pythonMode for later comparison
+		initialPythonMode = pythonMode;
 	}
 
 	public void rebuildEnv() {
@@ -175,6 +185,16 @@ public class OptionsPython extends OptionsPlugin {
 		catch (IOException exc) {
 			// Proceed gracefully if config file cannot be written.
 			log.debug(exc);
+		}
+
+		// Warn the user if pythonMode was just enabled and wasn't before
+		if (!initialPythonMode && pythonMode && uiService != null) {
+			String msg =
+				"You have just enabled Python mode. Please restart for these changes to take effect!\n\n" +
+					"If Fiji fails to start, try deleting your configuration file and restarting.\n\nConfiguration file: " +
+					configFile;
+			uiService.showDialog(msg, "Python Mode Enabled",
+				DialogPrompt.MessageType.WARNING_MESSAGE);
 		}
 	}
 
