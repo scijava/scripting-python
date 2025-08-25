@@ -6,13 +6,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,6 +29,14 @@
 
 package org.scijava.plugins.scripting.python;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.StringJoiner;
+
 import org.scijava.app.AppService;
 import org.scijava.command.CommandService;
 import org.scijava.launcher.Config;
@@ -38,27 +46,20 @@ import org.scijava.options.OptionsPlugin;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.DialogPrompt;
+import org.scijava.ui.UIService;
 import org.scijava.widget.Button;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.scijava.widget.TextWidget;
 
 /**
  * Options for configuring the Python environment.
- * 
+ *
  * @author Curtis Rueden
  */
-@Plugin(type = OptionsPlugin.class, menu = {
-	@Menu(label = MenuConstants.EDIT_LABEL,
-		weight = MenuConstants.EDIT_WEIGHT,
-		mnemonic = MenuConstants.EDIT_MNEMONIC),
-	@Menu(label = "Options", mnemonic = 'o'),
-	@Menu(label = "Python...", weight = 10),
-})
+@Plugin(type = OptionsPlugin.class, menu = { @Menu(
+	label = MenuConstants.EDIT_LABEL, weight = MenuConstants.EDIT_WEIGHT,
+	mnemonic = MenuConstants.EDIT_MNEMONIC), @Menu(label = "Options",
+		mnemonic = 'o'), @Menu(label = "Python...", weight = 10), })
 public class OptionsPython extends OptionsPlugin {
 
 	@Parameter
@@ -73,11 +74,27 @@ public class OptionsPython extends OptionsPlugin {
 	@Parameter(label = "Python environment directory", persist = false)
 	private File pythonDir;
 
-	@Parameter(label = "Rebuild Python environment", callback = "rebuildEnv")
+	@Parameter(label = "Conda dependencies", style = TextWidget.AREA_STYLE,
+		persist = false)
+	private String condaDependencies;
+
+	@Parameter(label = "Pip dependencies", style = TextWidget.AREA_STYLE,
+		persist = false)
+	private String pipDependencies;
+
+	@Parameter(label = "Build Python environment", callback = "rebuildEnv")
 	private Button rebuildEnvironment;
 
-	@Parameter(label = "Launch in Python mode", callback = "updatePythonConfig", persist = false)
+	@Parameter(label = "Launch in Python mode", callback = "updatePythonConfig",
+		persist = false)
 	private boolean pythonMode;
+
+	@Parameter(required = false)
+	private UIService uiService;
+
+	private boolean initialPythonMode = false;
+	private String initialCondaDependencies;
+	private String initialPipDependencies;
 
 	// -- OptionsPython methods --
 
@@ -124,28 +141,100 @@ public class OptionsPython extends OptionsPlugin {
 		}
 
 		if (pythonDir == null) {
-			// For the default Python directory, try to match the platform string used for Java installations.
-			final String javaPlatform = System.getProperty("scijava.app.java-platform");
-			final String platform = javaPlatform != null ? javaPlatform :
-				System.getProperty("os.name") + "-" + System.getProperty("os.arch");
-			final Path pythonPath = appService.getApp().getBaseDirectory().toPath().resolve("python").resolve(platform);
+			// For the default Python directory, try to match the platform
+			// string used for Java installations.
+			final String javaPlatform = System.getProperty(
+				"scijava.app.java-platform");
+			final String platform = javaPlatform != null ? javaPlatform : System
+				.getProperty("os.name") + "-" + System.getProperty("os.arch");
+			final Path pythonPath = appService.getApp().getBaseDirectory().toPath()
+				.resolve("python").resolve(platform);
 			pythonDir = pythonPath.toFile();
+		}
+
+		// Store the initial value of pythonMode for later comparison
+		initialPythonMode = pythonMode;
+
+		// Populate condaDependencies and pipDependencies from environment.yml
+		condaDependencies = "";
+		pipDependencies = "";
+		java.util.Set<String> pipBlacklist = new java.util.HashSet<>();
+		pipBlacklist.add("appose-python");
+		pipBlacklist.add("pyimagej");
+		File envFile = getEnvironmentYamlFile();
+		if (envFile.exists()) {
+			try {
+				java.util.List<String> lines = java.nio.file.Files.readAllLines(envFile
+					.toPath());
+				boolean inDeps = false, inPip = false;
+				StringJoiner condaDeps = new StringJoiner("\n");
+				StringJoiner pipDeps = new StringJoiner("\n");
+				for (String line : lines) {
+					String trimmed = line.trim();
+					if (trimmed.startsWith("#") || trimmed.isEmpty()) {
+						// Ignore empty and comment lines
+						continue;
+					}
+					if (trimmed.startsWith("dependencies:")) {
+						inDeps = true;
+						continue;
+					}
+					if (inDeps && trimmed.startsWith("- pip")) {
+						inPip = true;
+						continue;
+					}
+					if (inDeps && trimmed.startsWith("- ") && !inPip) {
+						String dep = trimmed.substring(2).trim();
+						if (!dep.equals("pip")) condaDeps.add(dep);
+						continue;
+					}
+					if (inPip && trimmed.startsWith("- ")) {
+						String pipDep = trimmed.substring(2).trim();
+						boolean blacklisted = false;
+						for (String bad : pipBlacklist) {
+							if (pipDep.contains(bad)) {
+								blacklisted = true;
+								break;
+							}
+						}
+						if (!blacklisted) pipDeps.add(pipDep);
+						continue;
+					}
+					if (inDeps && !trimmed.startsWith("- ") && !trimmed.isEmpty())
+						inDeps = false;
+					if (inPip && (!trimmed.startsWith("- ") || trimmed.isEmpty())) inPip =
+						false;
+				}
+				condaDependencies = condaDeps.toString().trim();
+				pipDependencies = pipDeps.toString().trim();
+				initialCondaDependencies = condaDependencies;
+				initialPipDependencies = pipDependencies;
+			}
+			catch (Exception e) {
+				log.debug("Could not read environment.yml: " + e.getMessage());
+			}
 		}
 	}
 
 	public void rebuildEnv() {
-		// Use scijava.app.python-env-file system property if present.
-		final Path appPath = appService.getApp().getBaseDirectory().toPath();
-		File environmentYaml = appPath.resolve("config").resolve("environment.yml").toFile();
-		final String pythonEnvFileProp = System.getProperty("scijava.app.python-env-file");
-		if (pythonEnvFileProp != null) {
-			environmentYaml = OptionsPython.stringToFile(appPath, pythonEnvFileProp);
-		}
+		File environmentYaml = writeEnvironmentYaml();
+		commandService.run(RebuildEnvironment.class, true, "environmentYaml",
+			environmentYaml, "targetDir", pythonDir);
+	}
 
-		commandService.run(RebuildEnvironment.class, true,
-			"environmentYaml", environmentYaml,
-			"targetDir", pythonDir
-		);
+	/**
+	 * Returns the File for the environment.yml, using the system property if set.
+	 */
+	private File getEnvironmentYamlFile() {
+		final Path appPath = appService.getApp().getBaseDirectory().toPath();
+		File environmentYaml = appPath.resolve("config").resolve("environment.yml")
+			.toFile();
+		final String pythonEnvFileProp = System.getProperty(
+			"scijava.app.python-env-file");
+		if (pythonEnvFileProp != null) {
+			environmentYaml = stringToFile(appPath, pythonEnvFileProp);
+		}
+		return environmentYaml;
 	}
 
 	@Override
@@ -175,6 +264,66 @@ public class OptionsPython extends OptionsPlugin {
 			// Proceed gracefully if config file cannot be written.
 			log.debug(exc);
 		}
+
+		if (pythonMode && (pythonDir == null || !pythonDir.exists())) {
+			rebuildEnv();
+		}
+		else {
+			writeEnvironmentYaml();
+		}
+		// Warn the user if pythonMode was just enabled and wasn't before
+		if (!initialPythonMode && pythonMode && uiService != null) {
+			String msg =
+				"You have just enabled Python mode. Please restart for these changes to take effect! (after your python environment initializes, if needed)\n\n" +
+					"If Fiji fails to start, try deleting your configuration file and restarting.\n\nConfiguration file: " +
+					configFile;
+			uiService.showDialog(msg, "Python Mode Enabled",
+				DialogPrompt.MessageType.WARNING_MESSAGE);
+		}
+	}
+
+	private File writeEnvironmentYaml() {
+		File envFile = getEnvironmentYamlFile();
+
+		// skip writing if nothing has changed
+		if (initialCondaDependencies.equals(condaDependencies) &&
+			initialPipDependencies.equals(pipDependencies)) return envFile;
+
+		// Update initial dependencies to detect future changes
+		initialCondaDependencies = condaDependencies;
+		initialPipDependencies = pipDependencies;
+
+		// Write environment.yml from condaDependencies and pipDependencies
+		try {
+			String name = "fiji";
+			String[] channels = { "conda-forge" };
+			String pyimagej = "pyimagej>=1.7.0";
+			String apposePython =
+				"git+https://github.com/apposed/appose-python.git@efe6dadb2242ca45820fcbb7aeea2096f99f9cb2";
+			StringBuilder yml = new StringBuilder();
+			yml.append("name: ").append(name).append("\nchannels:\n");
+			for (String ch : channels)
+				yml.append("  - ").append(ch).append("\n");
+			yml.append("dependencies:\n");
+			for (String dep : condaDependencies.split("\n")) {
+				String trimmed = dep.trim();
+				if (!trimmed.isEmpty()) yml.append("  - ").append(trimmed).append("\n");
+			}
+			yml.append("  - pip\n");
+			yml.append("  - pip:\n");
+			for (String dep : pipDependencies.split("\n")) {
+				String trimmed = dep.trim();
+				if (!trimmed.isEmpty()) yml.append("    - ").append(trimmed).append(
+					"\n");
+			}
+			yml.append("    - ").append(pyimagej).append("\n");
+			yml.append("    - ").append(apposePython).append("\n");
+			java.nio.file.Files.write(envFile.toPath(), yml.toString().getBytes());
+		}
+		catch (Exception e) {
+			log.debug("Could not write environment.yml: " + e.getMessage());
+		}
+		return envFile;
 	}
 
 	// -- Utility methods --
@@ -195,8 +344,8 @@ public class OptionsPython extends OptionsPlugin {
 	 */
 	static String fileToString(Path baseDir, File file) {
 		Path filePath = file.toPath();
-		Path relPath = filePath.startsWith(baseDir) ?
-			baseDir.relativize(filePath) : filePath.toAbsolutePath();
+		Path relPath = filePath.startsWith(baseDir) ? baseDir.relativize(filePath)
+			: filePath.toAbsolutePath();
 		return relPath.toString();
 	}
 }
