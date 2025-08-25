@@ -29,12 +29,16 @@
 
 package org.scijava.plugins.scripting.python;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.script.ScriptEngine;
 
 import org.scijava.Priority;
+import org.scijava.launcher.Config;
 import org.scijava.plugin.Plugin;
 import org.scijava.script.AbstractScriptLanguage;
 import org.scijava.script.ScriptLanguage;
@@ -47,8 +51,31 @@ import org.scijava.script.ScriptLanguage;
  * @see ScriptEngine
  */
 @Plugin(type = ScriptLanguage.class, name = "Python (pyimagej)",
-	priority = Priority.VERY_LOW)
+	priority = Priority.VERY_HIGH)
 public class PythonScriptLanguage extends AbstractScriptLanguage {
+
+	private Boolean isActive = null;
+
+	@Override
+	public boolean isActive() {
+		if (isActive == null) {
+			String configFileProp = System.getProperty("scijava.app.config-file");
+			File configFile = configFileProp == null ? null : new File(
+				configFileProp);
+			if (configFile != null && configFile.canRead()) {
+				try {
+					final Map<String, String> config = Config.load(configFile);
+
+					final String cfgLaunchMode = config.get("launch-mode");
+					if (cfgLaunchMode != null) isActive = cfgLaunchMode.equals("PYTHON");
+				}
+				catch (IOException e) {
+					// Proceed gracefully if config file is not accessible.
+				}
+			}
+		}
+		return (isActive == null) ? false : isActive;
+	}
 
 	@Override
 	public String getEngineName() {
