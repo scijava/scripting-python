@@ -24,7 +24,6 @@ csbdeep==0.8.0
 import sys
 import imagej.convert as convert
 import numpy as np
-import matplotlib.pyplot as plt
 from cellpose import models
 from csbdeep.utils import normalize
 from stardist.models import StarDist2D
