@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 
 import org.apposed.appose.Appose;
 import org.apposed.appose.Builder;
-import org.scijava.app.AppService;
 import org.scijava.command.Command;
 import org.scijava.launcher.Splash;
 import org.scijava.log.Logger;
@@ -57,9 +56,6 @@ import org.scijava.ui.UIService;
 public class RebuildEnvironment implements Command {
 
 	private static final int _PROGRESS_LENGTH = 80;
-
-	@Parameter
-	private AppService appService;
 
 	@Parameter
 	private Logger log;
