@@ -62,6 +62,11 @@ import org.scijava.widget.TextWidget;
 		mnemonic = 'o'), @Menu(label = "Python...", weight = 10), })
 public class OptionsPython extends OptionsPlugin {
 
+	// -- Dependency constants and fields --
+	private static final String DEFAULT_PYIMAGEJ = "pyimagej>=1.7.0";
+	private static final String DEFAULT_APPOSE_PYTHON =
+		"git+https://github.com/apposed/appose-python.git@efe6dadb2242ca45820fcbb7aeea2096f99f9cb2";
+
 	@Parameter
 	private AppService appService;
 
@@ -91,6 +96,12 @@ public class OptionsPython extends OptionsPlugin {
 
 	@Parameter(required = false)
 	private UIService uiService;
+
+	// -- Private fields --
+
+	// These hold the parsed or user-specified values, or null if not found
+	private String pyimagejDependency;
+	private String apposePythonDependency;
 
 	private boolean initialPythonMode = false;
 	private String initialCondaDependencies;
@@ -158,6 +169,8 @@ public class OptionsPython extends OptionsPlugin {
 		// Populate condaDependencies and pipDependencies from environment.yml
 		condaDependencies = "";
 		pipDependencies = "";
+		pyimagejDependency = null;
+		apposePythonDependency = null;
 		java.util.Set<String> pipBlacklist = new java.util.HashSet<>();
 		pipBlacklist.add("appose-python");
 		pipBlacklist.add("pyimagej");
@@ -190,14 +203,19 @@ public class OptionsPython extends OptionsPlugin {
 					}
 					if (inPip && trimmed.startsWith("- ")) {
 						String pipDep = trimmed.substring(2).trim();
-						boolean blacklisted = false;
-						for (String bad : pipBlacklist) {
-							if (pipDep.contains(bad)) {
-								blacklisted = true;
-								break;
+						if (pipDep.startsWith("pyimagej")) pyimagejDependency = pipDep;
+						else if (pipDep.contains("appose-python")) apposePythonDependency =
+							pipDep;
+						else {
+							boolean blacklisted = false;
+							for (String bad : pipBlacklist) {
+								if (pipDep.contains(bad)) {
+									blacklisted = true;
+									break;
+								}
 							}
+							if (!blacklisted) pipDeps.add(pipDep);
 						}
-						if (!blacklisted) pipDeps.add(pipDep);
 						continue;
 					}
 					if (inDeps && !trimmed.startsWith("- ") && !trimmed.isEmpty())
@@ -297,9 +315,6 @@ public class OptionsPython extends OptionsPlugin {
 		try {
 			String name = "fiji";
 			String[] channels = { "conda-forge" };
-			String pyimagej = "pyimagej>=1.7.0";
-			String apposePython =
-				"git+https://github.com/apposed/appose-python.git@efe6dadb2242ca45820fcbb7aeea2096f99f9cb2";
 			StringBuilder yml = new StringBuilder();
 			yml.append("name: ").append(name).append("\nchannels:\n");
 			for (String ch : channels)
@@ -311,14 +326,30 @@ public class OptionsPython extends OptionsPlugin {
 			}
 			yml.append("  - pip\n");
 			yml.append("  - pip:\n");
+			boolean foundPyimagej = false, foundAppose = false;
 			for (String dep : pipDependencies.split("\n")) {
 				String trimmed = dep.trim();
-				if (!trimmed.isEmpty()) yml.append("    - ").append(trimmed).append(
-					"\n");
+				if (!trimmed.isEmpty()) {
+					if (trimmed.startsWith("pyimagej")) foundPyimagej = true;
+					if (trimmed.contains("appose-python")) foundAppose = true;
+					yml.append("    - ").append(trimmed).append("\n");
+				}
 			}
-			yml.append("    - ").append(pyimagej).append("\n");
-			yml.append("    - ").append(apposePython).append("\n");
+			// Append pyimagej if not found
+			if (!foundPyimagej) {
+				String pyimagej = pyimagejDependency != null ? pyimagejDependency
+					: DEFAULT_PYIMAGEJ;
+				yml.append("    - ").append(pyimagej).append("\n");
+			}
+			// Append appose-python if not found
+			if (!foundAppose) {
+				String apposePython = apposePythonDependency != null
+					? apposePythonDependency : DEFAULT_APPOSE_PYTHON;
+				yml.append("    - ").append(apposePython).append("\n");
+			}
 			java.nio.file.Files.write(envFile.toPath(), yml.toString().getBytes());
+			pyimagejDependency = null;
+			apposePythonDependency = null;
 		}
 		catch (Exception e) {
 			log.debug("Could not write environment.yml: " + e.getMessage());
