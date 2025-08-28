@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.apposed.appose.Appose;
@@ -55,6 +56,8 @@ import org.scijava.ui.UIService;
 @Plugin(type = Command.class, label = "Rebuild Python environment")
 public class RebuildEnvironment implements Command {
 
+	private static final int _PROGRESS_LENGTH = 80;
+
 	@Parameter
 	private AppService appService;
 
@@ -69,6 +72,8 @@ public class RebuildEnvironment implements Command {
 
 	@Parameter(required = false)
 	private UIService uiService;
+
+	private int progressPrinted = 0;
 
 	// -- OptionsPython methods --
 
@@ -150,12 +155,25 @@ public class RebuildEnvironment implements Command {
 	}
 
 	private void reportErr(String s) {
-		if (s.isEmpty()) System.err.print(".");
-		else log.error(s);
+		report(s, log::error);
 	}
 
 	private void reportMsg(String s) {
-		if (s.isEmpty()) System.err.print(".");
-		else log.info(s);
+		report(s, log::info);
 	}
+
+    private void report(String s, Consumer<String> reporter) {
+		if (s.isEmpty()) {
+			System.err.print(".");
+			progressPrinted++;
+			if (progressPrinted >= _PROGRESS_LENGTH) {
+				System.err.println();
+				progressPrinted = 0;
+			}
+		}
+		else {
+			progressPrinted = 0;
+			reporter.accept(s);
+		}
+    }
 }
