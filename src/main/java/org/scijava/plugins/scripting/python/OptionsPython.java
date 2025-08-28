@@ -118,7 +118,26 @@ public class OptionsPython extends OptionsPlugin {
 	}
 
 	public void setPythonDir(final File pythonDir) {
-		this.pythonDir = pythonDir;
+		if (pythonDir == null) {
+			this.pythonDir = null;
+		} else {
+			// Trim whitespace and remove illegal characters from the path
+			String path = pythonDir.getPath();
+			if (path != null) {
+				// Remove leading/trailing whitespace and angle brackets
+				path = path.trim().replaceAll("^[\\s<>]+|[\\s<>]+$", "");
+				// Remove illegal characters for Windows paths except : after drive letter
+				// Remove all colons except at index 1 (C:)
+				if (path.length() > 2 && path.charAt(1) == ':') {
+					path = path.substring(0, 2) + path.substring(2).replace(":", "");
+				} else {
+					path = path.replace(":", "");
+				}
+				// Remove any other illegal characters (keep it simple)
+				path = path.replaceAll("[\n\r\t]", "");
+			}
+			this.pythonDir = new File(path);
+		}
 	}
 
 	public void setPythonMode(final boolean pythonMode) {
@@ -257,6 +276,7 @@ public class OptionsPython extends OptionsPlugin {
 
 	@Override
 	public void save() {
+		setPythonDir(pythonDir); // clean up the path
 		// Write python-dir and launch-mode values to app config file.
 		final String configFileProp = System.getProperty("scijava.app.config-file");
 		if (configFileProp == null) return; // No config file to update.
