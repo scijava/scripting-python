@@ -75,7 +75,24 @@ public class RebuildEnvironment implements Command {
 	@Override
 	public void run() {
 		final File backupDir = new File(targetDir.getPath() + ".old");
+		// Prevent rebuilding the environment currently in use by pyimagej
 		if (targetDir.exists()) {
+			String cfgPythonDir = System.getProperty("scijava.python.dir", "");
+			if (cfgPythonDir != null && !cfgPythonDir.isEmpty()) {
+				// Normalize both paths for comparison
+				String targetPath = targetDir.getAbsolutePath().replace("\\", "/");
+				String cfgPath = cfgPythonDir.replace("\\", "/");
+				if (targetPath.endsWith(cfgPath)) {
+					String msg = "You cannot rebuild the environment currently being used by pyimagej (" + cfgPythonDir + ").\n" +
+						"Please select a different target directory, or restart in Java mode.";
+					if (uiService != null) {
+						uiService.showDialog(msg, "Cannot Rebuild Active Environment", DialogPrompt.MessageType.ERROR_MESSAGE);
+					} else {
+						log.error(msg);
+					}
+					return;
+				}
+			}
 			boolean confirmed = true;
 			if (uiService != null) {
 				String msg =
