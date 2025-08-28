@@ -3,7 +3,13 @@
 '''
 Note that this script requires a Python environment that includes StarDist and Cellpose
 StarDist currently only supports NumPy 1.x, which necessitates using TensorFlow 2.15 or earlier
-TensorFlow 2.15 itself requires python 3.11 or earlier
+TensorFlow 2.15 itself requires python 3.11 or earlier.
+
+We also use cellpose 3.x because cellpose 4.x is heavily biased towards using their `cpsam`,
+"segment anything" model. This is a very cool model, but it is also huge and performance
+with a CPU is not great. It is also overkill for this example.
+
+Using cellpose 3.x allows us to stick with the light and focused `ctyo` model for segmentation.
 
 You can rebuild your Python environment by using:
 Edit > Options > Python…
@@ -12,14 +18,47 @@ The following configuration was used to develop this script:
 
 --Conda dependencies--
 python=3.11
-numpy=1.26.4
 
 --Pip dependencies--
-tensorflow==2.15
-cellpose==4.0.6
-stardist==0.9.0
+numpy=1.26.4
 csbdeep==0.8.0
+tensorflow==2.15
+cellpose==3.1.1.1
+stardist==0.9.0
 '''
+
+# Although cellpose 3.x "recognizes" the `ctyo` model, all models must be downloaded
+# once before use (to USER_HOME/.cellpose/models).
+# Unfortunately the built-in logic for downloading models in cellpose is completely
+# tied to tqdm, which breaks when running in Fiji on Windows.
+# Attempts to disable tqdm with environment variables and "monkey patching" failed
+# Thus, the following code is necessary to download the cyto model if not already available.
+
+import os
+from pathlib import Path
+import urllib.request
+
+def ensure_cyto_model():
+    """Ensure the Cellpose 'cyto' model files exist in ~/.cellpose/models/."""
+    model_dir = Path.home() / ".cellpose" / "models"
+    model_dir.mkdir(parents=True, exist_ok=True)
+
+    files = {
+        "cytotorch_0": "https://www.cellpose.org/models/cytotorch_0",
+        "size_cytotorch_0.npy": "https://www.cellpose.org/models/size_cytotorch_0.npy"
+    }
+
+    for filename, url in files.items():
+        target = model_dir / filename
+        if not target.exists():
+            print(f"Downloading {filename}...")
+            urllib.request.urlretrieve(url, target)
+            print(f"{filename} downloaded to {target}")
+        else:
+            print(f"Skipping {filename} - already cached at {target}")
+
+# Download and cache the cyto model
+ensure_cyto_model()
 
 import sys
 import imagej.convert as convert
@@ -81,7 +120,7 @@ model = StarDist2D.from_pretrained('2D_versatile_fluo')
 nuc_labels, _ = model.predict_instances(normalize(xdata[:, :, 0]))
 
 # run Cellpose on cytoplasm (grayscale)
-model = models.CellposeModel(gpu=False, model_type='cyto')
+model = models.Cellpose(gpu=False, model_type='cyto')
 ch = [0, 0]
 cyto_labels = model.eval(xdata[:, :, 1].data, channels=ch, diameter=72.1)
 
