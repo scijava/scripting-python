@@ -1,44 +1,71 @@
 #@ ImageJ ij
 
 '''
-Note that this script requires a Python environment that includes StarDist and Cellpose
-StarDist currently only supports NumPy 1.x, which necessitates using TensorFlow 2.15 or earlier
+==========================
+Building a Python Environment
+==========================
+NOTE: this script requires a Python environment that includes StarDist and Cellpose.
+At time of writing, StarDist  only supports NumPy 1.x, which necessitates using TensorFlow 2.15.
 TensorFlow 2.15 itself requires python 3.11 or earlier.
 
-We also use cellpose 3.x because cellpose 4.x is heavily biased towards using their `cpsam`,
+We use cellpose 3.x because cellpose 4.x is heavily biased towards using their `cpsam`,
 "segment anything" model. This is a very cool model, but it is also huge and performance
-with a CPU is not great. It is also overkill for this example.
+with a CPU is not great. It is also more powerful than needed for this example.
 
 Using cellpose 3.x allows us to stick with the light and focused `ctyo` model for segmentation.
 
-You can rebuild your Python environment by using:
+See the Conda and Pip dependency sections below for specific library versions that were used
+to develop this script.
+
+Use these versions to create an appropriate Python environment with:
 Edit > Options > Python…
 
-The following configuration was used to develop this script:
+==========================
+Platform Dependency Tuning
+==========================
+NOTE: python can be very sensitive to operating system.
+It is possible to install "compatible" versions of libraries that are actually incompatible,
+based on the source of the library.
+In testing this script, the following guidelines were used:
+Windows: numpy should be installed with pip (as indicated below)
+MacOS (arm64): numpy should be installed with Conda (NOT with pip)
 
---Conda dependencies--
+==========================
+Conda-managed dependencies
+==========================
 python=3.11
 
---Pip dependencies--
-numpy=1.26.4
+==========================
+Pip-managed dependencies
+==========================
+numpy==1.26.4
 csbdeep==0.8.0
-tensorflow==2.15
+tensorflow==2.15.1
 cellpose==3.1.1.1
 stardist==0.9.0
+
+==========================
+Future Directions
+==========================
+The "segment anything" Cellpose model is very powerful. The next steps for this script would be
+to remove StarDist and upgrade to Cellpose 4.x, which would be used to segment both cytoplasm and
+nuclear channels.
+
+==========================
+Known Issues
+==========================
+Although cellpose 3.x "recognizes" the `ctyo` model, all models must be downloaded
+once before use (to USER_HOME/.cellpose/models).
+Unfortunately the built-in logic for downloading models in cellpose is completely
+tied to tqdm, which breaks when running in the script editor on Windows.
+Attempts to disable tqdm with environment variables and "monkey patching" failed.
+Thus, we provide the `cache_cyto_model` method below to download the model if needed.
 '''
 
-# Although cellpose 3.x "recognizes" the `ctyo` model, all models must be downloaded
-# once before use (to USER_HOME/.cellpose/models).
-# Unfortunately the built-in logic for downloading models in cellpose is completely
-# tied to tqdm, which breaks when running in Fiji on Windows.
-# Attempts to disable tqdm with environment variables and "monkey patching" failed
-# Thus, the following code is necessary to download the cyto model if not already available.
-
-import os
 from pathlib import Path
 import urllib.request
 
-def ensure_cyto_model():
+def cache_cyto_model():
     """Ensure the Cellpose 'cyto' model files exist in ~/.cellpose/models/."""
     model_dir = Path.home() / ".cellpose" / "models"
     model_dir.mkdir(parents=True, exist_ok=True)
@@ -58,9 +85,8 @@ def ensure_cyto_model():
             print(f"Skipping {filename} - already cached at {target}")
 
 # Download and cache the cyto model
-ensure_cyto_model()
+cache_cyto_model()
 
-import sys
 import imagej.convert as convert
 import numpy as np
 from cellpose import models
@@ -162,16 +188,21 @@ imp = ij.WindowManager.getImage(data_title)
 imp.setC(2)
 ij.IJ.run(imp, "Enhance Contrast", "saturated=0.35")
 
-# convert a single ImgLib2 roi to a legacy ImageJ ROI with the ConvertService.
+# ROI Conversion Options
+# At this point, we have ImgLib2 ROIs. To display in the RoiManager, we need ImageJ 1.x ROIs
+
+# Option 1: convert a single ImgLib2 ROI to a legacy ImageJ ROI with the ConvertService
+# This ROI could then be manually added to the Roi manager
 imglib_polygon_roi = nuc_roi_tree.children().get(0).data()
 ij_polygon_roi = ij.convert().convert(imglib_polygon_roi, sj.jimport('ij.gui.PolygonRoi'))
 print(type(ij_polygon_roi))
 
-# convert index images to ImageJ ROI in RoiManager
-#TODO any way to color the selections? We can use Colors... but it appears to be global and the last one run wins
-#ij.IJ.run(imp, "Colors...", "foreground=blue background=black selection=red");
+# Option 2: convert index images to ImageJ ROIs in RoiManager
+# This convenience method simplifies the batch conversion and addition to the RoiManager
 convert.index_img_to_roi_manager(ij, nuc_labels)
 convert.index_img_to_roi_manager(ij, cyto_labels[0])
+#TODO any way to color the selections? We can use Colors... but it appears to be global and the last one run wins
+#ij.IJ.run(imp, "Colors...", "foreground=blue background=black selection=red");
 
 #TODO this pops an unnecessary display at the end but if I don't make it the last line the ROIs don't show
 rm.moveRoisToOverlay(imp)
