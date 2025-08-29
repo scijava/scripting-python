@@ -55,7 +55,7 @@ import org.scijava.ui.UIService;
 @Plugin(type = Command.class, label = "Rebuild Python environment")
 public class RebuildEnvironment implements Command {
 
-	private static final int _PROGRESS_LENGTH = 80;
+	private static final int _PROGRESS_LENGTH = 75;
 
 	@Parameter
 	private Logger log;
@@ -168,7 +168,10 @@ public class RebuildEnvironment implements Command {
 			}
 		}
 		else {
-			progressPrinted = 0;
+			if (progressPrinted > 0) {
+				System.err.println();
+				progressPrinted = 0;
+			}
 			reporter.accept(s);
 		}
     }
