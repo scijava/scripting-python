@@ -9,8 +9,8 @@ At time of writing, StarDist  only supports NumPy 1.x, which necessitates using 
 TensorFlow 2.15 itself requires python 3.11 or earlier.
 
 We use cellpose 3.x because cellpose 4.x is heavily biased towards using their `cpsam`,
-"segment anything" model. This is a very cool model, but it is also huge and performance
-with a CPU is not great. It is also more powerful than needed for this example.
+"segment anything" model. This is a very cool model, but it is also huge and may require GPU use.
+`cpsam` is also more powerful than needed for this example.
 
 Using cellpose 3.x allows us to stick with the light and focused `ctyo` model for segmentation.
 
@@ -50,6 +50,9 @@ Future Directions
 The "segment anything" Cellpose model is very powerful. The next steps for this script would be
 to remove StarDist and upgrade to Cellpose 4.x, which would be used to segment both cytoplasm and
 nuclear channels.
+
+NOTE: Because of the size of the cpsam model used in Cellpose 4.x, they advise against CPU-based segmentation.
+Using `gpu=True` with Cellpose models from the Fiji script editor is untested.
 
 ==========================
 Known Issues
