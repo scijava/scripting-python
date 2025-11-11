@@ -128,7 +128,10 @@ public class RebuildEnvironment implements Command {
 		if (targetDir.exists()) targetDir.renameTo(backupDir);
 		// Build the new environment.
 		try {
-			Builder builder = Appose.file(environmentYaml, "environment.yml")
+			Builder builder = Appose.mamba()
+				.file(environmentYaml.getAbsolutePath())
+				.scheme("environment.yml")
+				.base(targetDir)
 				.subscribeOutput(this::reportMsg).subscribeError(this::reportErr)
 				.subscribeProgress((msg, cur, max) -> Splash.update(msg, (double) cur /
 					max));
@@ -137,7 +140,7 @@ public class RebuildEnvironment implements Command {
 			System.err.println();
 			log.info("Building Python environment");
 			Splash.show();
-			builder.build(targetDir);
+			builder.build();
 			// Notify user of success
 			if (uiService != null) {
 				uiService.showDialog(

@@ -64,8 +64,7 @@ public class OptionsPython extends OptionsPlugin {
 
 	// -- Dependency constants and fields --
 	private static final String DEFAULT_PYIMAGEJ = "pyimagej>=1.7.0";
-	private static final String DEFAULT_APPOSE_PYTHON =
-		"git+https://github.com/apposed/appose-python.git@efe6dadb2242ca45820fcbb7aeea2096f99f9cb2";
+	private static final String DEFAULT_APPOSE = "appose>=0.7.2";
 
 	@Parameter
 	private AppService appService;
@@ -101,7 +100,7 @@ public class OptionsPython extends OptionsPlugin {
 
 	// These hold the parsed or user-specified values, or null if not found
 	private String pyimagejDependency;
-	private String apposePythonDependency;
+	private String apposeDependency;
 
 	private boolean initialPythonMode = false;
 	private String initialCondaDependencies;
@@ -189,9 +188,9 @@ public class OptionsPython extends OptionsPlugin {
 		condaDependencies = "";
 		pipDependencies = "";
 		pyimagejDependency = null;
-		apposePythonDependency = null;
+		apposeDependency = null;
 		java.util.Set<String> pipBlacklist = new java.util.HashSet<>();
-		pipBlacklist.add("appose-python");
+		pipBlacklist.add("appose");
 		pipBlacklist.add("pyimagej");
 		File envFile = getEnvironmentYamlFile();
 		if (envFile.exists()) {
@@ -223,8 +222,7 @@ public class OptionsPython extends OptionsPlugin {
 					if (inPip && trimmed.startsWith("- ")) {
 						String pipDep = trimmed.substring(2).trim();
 						if (pipDep.startsWith("pyimagej")) pyimagejDependency = pipDep;
-						else if (pipDep.contains("appose-python")) apposePythonDependency =
-							pipDep;
+						else if (pipDep.contains("appose")) apposeDependency = pipDep;
 						else {
 							boolean blacklisted = false;
 							for (String bad : pipBlacklist) {
@@ -351,25 +349,25 @@ public class OptionsPython extends OptionsPlugin {
 				String trimmed = dep.trim();
 				if (!trimmed.isEmpty()) {
 					if (trimmed.startsWith("pyimagej")) foundPyimagej = true;
-					if (trimmed.contains("appose-python")) foundAppose = true;
+					if (trimmed.contains("appose")) foundAppose = true;
 					yml.append("    - ").append(trimmed).append("\n");
 				}
 			}
 			// Append pyimagej if not found
 			if (!foundPyimagej) {
-				String pyimagej = pyimagejDependency != null ? pyimagejDependency
-					: DEFAULT_PYIMAGEJ;
+				String pyimagej = pyimagejDependency != null ?
+					pyimagejDependency : DEFAULT_PYIMAGEJ;
 				yml.append("    - ").append(pyimagej).append("\n");
 			}
-			// Append appose-python if not found
+			// Append appose if not found
 			if (!foundAppose) {
-				String apposePython = apposePythonDependency != null
-					? apposePythonDependency : DEFAULT_APPOSE_PYTHON;
-				yml.append("    - ").append(apposePython).append("\n");
+				String appose = apposeDependency != null
+					? apposeDependency : DEFAULT_APPOSE;
+				yml.append("    - ").append(appose).append("\n");
 			}
 			java.nio.file.Files.write(envFile.toPath(), yml.toString().getBytes());
 			pyimagejDependency = null;
-			apposePythonDependency = null;
+			apposeDependency = null;
 		}
 		catch (Exception e) {
 			log.debug("Could not write environment.yml: " + e.getMessage());
