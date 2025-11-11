@@ -76,7 +76,7 @@ public class RebuildEnvironment implements Command {
 	@Override
 	public void run() {
 		final File backupDir = new File(targetDir.getPath() + ".old");
-		// Prevent rebuilding the environment currently in use by pyimagej
+		// Prevent rebuilding the environment currently in use.
 		if (targetDir.exists()) {
 			String cfgPythonDir = System.getProperty("scijava.python.dir", "");
 			if (cfgPythonDir != null && !cfgPythonDir.isEmpty()) {

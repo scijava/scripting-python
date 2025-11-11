@@ -40,13 +40,13 @@ import org.scijava.script.AbstractScriptLanguage;
 import org.scijava.script.ScriptLanguage;
 
 /**
- * An adapter for Python (pyimagej) to the SciJava scripting interface.
+ * An adapter for Python to the SciJava scripting interface.
  *
  * @author Curtis Rueden
  * @author Karl Duderstadt
  * @see ScriptEngine
  */
-@Plugin(type = ScriptLanguage.class, name = "Python (pyimagej)",
+@Plugin(type = ScriptLanguage.class, name = "Python",
 	priority = Priority.VERY_LOW)
 public class PythonScriptLanguage extends AbstractScriptLanguage {
 

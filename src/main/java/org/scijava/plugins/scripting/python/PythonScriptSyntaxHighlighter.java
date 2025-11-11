@@ -34,11 +34,11 @@ import org.scijava.plugin.Plugin;
 import org.scijava.ui.swing.script.SyntaxHighlighter;
 
 /**
- * SyntaxHighlighter for Python (scyjava).
+ * SyntaxHighlighter for Python.
  *
  * @author Karl Duderstadt
  */
-@Plugin(type = SyntaxHighlighter.class, name = "python-(pyimagej)")
+@Plugin(type = SyntaxHighlighter.class, name = "python")
 public class PythonScriptSyntaxHighlighter extends PythonTokenMaker implements
 	SyntaxHighlighter
 {
