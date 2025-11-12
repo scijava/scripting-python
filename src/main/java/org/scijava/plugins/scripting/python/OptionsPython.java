@@ -307,12 +307,13 @@ public class OptionsPython extends OptionsPlugin {
 		else {
 			writeEnvironmentYaml();
 		}
-		// Warn the user if pythonMode was just enabled and wasn't before
+		// Warn the user if pythonMode was just enabled and wasn't before.
 		if (!initialPythonMode && pythonMode && uiService != null) {
 			String msg =
-				"You have just enabled Python mode. Please restart for these changes to take effect! (after your python environment initializes, if needed)\n\n" +
-					"If Fiji fails to start, try deleting your configuration file and restarting.\n\nConfiguration file: " +
-					configFile;
+				"You have just enabled Python mode. Please restart for these changes to take effect\n" +
+				"(once your Python environment has finished initializing).\n\n" +
+				"If Fiji fails to start, try deleting your configuration file and restarting.\n\n" +
+				"Configuration file: " + configFile;
 			uiService.showDialog(msg, "Python Mode Enabled",
 				DialogPrompt.MessageType.WARNING_MESSAGE);
 		}
