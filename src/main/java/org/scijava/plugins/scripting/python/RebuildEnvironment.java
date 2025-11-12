@@ -175,6 +175,9 @@ public class RebuildEnvironment implements Command {
 				System.err.println();
 				progressPrinted = 0;
 			}
+			while (s.endsWith("\n") || s.endsWith("\r")) {
+				s = s.substring(0, s.length() - 1);
+			}
 			reporter.accept(s);
 		}
     }
