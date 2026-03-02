@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.apposed.appose.Appose;
+import org.apposed.appose.BuildException;
 import org.apposed.appose.Builder;
 import org.scijava.command.Command;
 import org.scijava.launcher.Splash;
@@ -128,7 +129,7 @@ public class RebuildEnvironment implements Command {
 		if (targetDir.exists()) targetDir.renameTo(backupDir);
 		// Build the new environment.
 		try {
-			Builder builder = Appose.mamba()
+			Builder<?> builder = Appose.mamba()
 				.file(environmentYaml.getAbsolutePath())
 				.scheme("environment.yml")
 				.base(targetDir)
@@ -148,7 +149,7 @@ public class RebuildEnvironment implements Command {
 					"Environment Ready", DialogPrompt.MessageType.INFORMATION_MESSAGE);
 			}
 		}
-		catch (IOException exc) {
+		catch (BuildException exc) {
 			log.error("Failed to build Python environment", exc);
 		}
 	}
